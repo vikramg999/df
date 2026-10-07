@@ -1,0 +1,21 @@
+import os
+
+file_path = input("Enter file path: ")
+
+if os.path.isfile(file_path):
+    with open(file_path, "rb") as file:
+        header = file.read(4)
+
+    if header.startswith(b"\xFF\xD8\xFF"):
+        file_type = "JPEG Image"
+    elif header.startswith(b"%PDF"):
+        file_type = "PDF Document"
+    else:
+        file_type = "Unknown File Type"
+
+    print("\nFile Name:", os.path.basename(file_path))
+    print("Header:", header.hex(" ").upper())
+    print("File Type:", file_type)
+    print("Extension:", os.path.splitext(file_path)[1] or "None")
+else:
+    print("File does not exist.")
