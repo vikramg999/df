@@ -1,0 +1,25 @@
+import os, shutil, hashlib, csv
+from datetime import datetime
+
+src, dst = "Evidence_Source", "Collected_Evidence"
+os.makedirs(dst, exist_ok=True)
+
+with open("evidence_report.csv", "w", newline="") as f:
+    w = csv.writer(f)
+    w.writerow(["File Name", "File Size", "Modified Time", "SHA-256 Hash"])
+
+    for name in os.listdir(src):
+        p = os.path.join(src, name)
+        if os.path.isfile(p):
+            shutil.copy2(p, os.path.join(dst, name))
+            h = hashlib.sha256(open(p, "rb").read()).hexdigest()
+            w.writerow([name, os.path.getsize(p),
+                        datetime.fromtimestamp(os.path.getmtime(p)), h])
+            print("Collected:", name)
+
+print("\nDigital evidence collection completed.")
+print("Evidence saved in:", dst)
+print("Report saved as: evidence_report.csv")
+
+
+#evidence src - log 
