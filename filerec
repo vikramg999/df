@@ -1,0 +1,57 @@
+import os, shutil, hashlib, csv
+from datetime import datetime
+
+SOURCE_DIR = "Evidence_source"
+RECOVERY_DIR = "Recovered_files"
+REPORT_FILE = "recovery_report.csv"
+
+os.makedirs(RECOVERY_DIR, exist_ok=True)
+
+def get_hash(file):
+    return hashlib.sha256(open(file, "rb").read()).hexdigest()
+
+def recover():
+    records = []
+
+    for root, folders, files in os.walk(SOURCE_DIR):
+        for filename in files:
+            if filename.endswith(".deleted"):
+                old_file = os.path.join(root, filename)
+
+                try:
+                    with open(old_file, "r", encoding="utf-8") as f:
+                        f.read()
+
+                    new_name = filename.replace(".deleted", "")
+                    new_file = os.path.join(RECOVERY_DIR, new_name)
+
+                    shutil.copy2(old_file, new_file)
+                    file_hash = get_hash(new_file)
+
+                    records.append([
+                        filename, new_name,
+                        os.path.getsize(new_file),
+                        file_hash,
+                        datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                        "Recovered"
+                    ])
+
+                    print("Recovered:", new_name)
+
+                except (UnicodeDecodeError, OSError):
+                    print("Not a text file:", filename)
+
+    with open(REPORT_FILE, "w", newline="", encoding="utf-8") as f:
+        writer = csv.writer(f)
+        writer.writerow([
+            "Original File", "Recovered File", "Size (Bytes)",
+            "SHA-256 Hash", "Recovery Time", "Status"
+        ])
+        writer.writerows(records)
+
+    print("\nRecovery completed.")
+    print("Report saved as:", REPORT_FILE)
+
+recover()
+
+#src-evi.txt.del not recfil-code
